@@ -11,6 +11,7 @@
         h1 { text-align: center; margin-bottom: 30px; font-size: 2rem; background: linear-gradient(90deg, #00d4ff, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .summary { background: rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
         .summary-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .summary-row:last-child { border-bottom: none; }
         .stock-card { background: rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
         .stock-name { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
         .stock-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -19,9 +20,8 @@
         .info-value { font-size: 1.2rem; font-weight: bold; margin-top: 4px; }
         .profit { color: #3fb950; }
         .loss { color: #f85149; }
-        .btn { display: block; width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 12px; color: white; font-size: 1rem; cursor: pointer; margin-top: 20px; }
-        .btn:hover { opacity: 0.9; }
-        .update-time { text-align: center; color: #8b949e; font-size: 0.8rem; margin-top: 10px; }
+        .flat { color: #8b949e; }
+        .note { text-align: center; color: #8b949e; font-size: 0.8rem; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -31,9 +31,9 @@
         <div class="summary">
             <div class="summary-row"><span>起始資金</span><span>$1,000,000</span></div>
             <div class="summary-row"><span>總投入</span><span>$329,250</span></div>
-            <div class="summary-row"><span>目前現金</span><span id="cash">載入中...</span></div>
-            <div class="summary-row"><span>總資產</span><span id="total">載入中...</span></div>
-            <div class="summary-row"><span>總損益</span><span id="total-pnl">載入中...</span></div>
+            <div class="summary-row"><span>目前現金</span><span>$670,750</span></div>
+            <div class="summary-row"><span>總資產</span><span id="total">$671,250</span></div>
+            <div class="summary-row"><span>總損益</span><span id="total-pnl" class="loss">-$3,750</span></div>
         </div>
 
         <div class="stock-card">
@@ -41,9 +41,9 @@
             <div class="stock-info">
                 <div class="info-item"><div class="info-label">持股</div><div class="info-value">162 股</div></div>
                 <div class="info-item"><div class="info-label">成本</div><div class="info-value">$1,850</div></div>
-                <div class="info-item"><div class="info-label">現價</div><div class="info-value" id="price-2330">-</div></div>
-                <div class="info-item"><div class="info-label">現值</div><div class="info-value" id="value-2330">-</div></div>
-                <div class="info-item"><div class="info-label">損益</div><div class="info-value" id="pnl-2330">-</div></div>
+                <div class="info-item"><div class="info-label">現價</div><div class="info-value">$1,855</div></div>
+                <div class="info-item"><div class="info-label">現值</div><div class="info-value">$300,510</div></div>
+                <div class="info-item"><div class="info-label">損益</div><div class="info-value profit">+$810</div></div>
                 <div class="info-item"><div class="info-label">停損/目標</div><div class="info-value">$1,750 / $2,000</div></div>
             </div>
         </div>
@@ -53,86 +53,18 @@
             <div class="stock-info">
                 <div class="info-item"><div class="info-label">持股</div><div class="info-value">500 股</div></div>
                 <div class="info-item"><div class="info-label">成本</div><div class="info-value">$59.1</div></div>
-                <div class="info-item"><div class="info-label">現價</div><div class="info-value" id="price-2303">-</div></div>
-                <div class="info-item"><div class="info-label">現值</div><div class="info-value" id="value-2303">-</div></div>
-                <div class="info-item"><div class="info-label">損益</div><div class="info-value" id="pnl-2303">-</div></div>
+                <div class="info-item"><div class="info-label">現價</div><div class="info-value">$57.4</div></div>
+                <div class="info-item"><div class="info-label">現值</div><div class="info-value">$28,700</div></div>
+                <div class="info-item"><div class="info-label">損益</div><div class="info-value loss">-$850</div></div>
                 <div class="info-item"><div class="info-label">停損/目標</div><div class="info-value">$56 / $65</div></div>
             </div>
         </div>
 
-        <button class="btn" onclick="fetchPrices()">🔄 更新股價</button>
-        <div class="update-time" id="update-time"></div>
+        <div class="note">
+            📌 現價更新時間：2026/04/01 17:21<br>
+            💡 需要更新股價？問蝦趴！<br>
+            ⚠️ 聯電已接近停損價 $56，密切注意！
+        </div>
     </div>
-
-    <script>
-        const TOTAL = 1000000;
-        const INVESTED = 329250;
-        
-        async function fetchPrices() {
-            try {
-                const proxies = [
-                    'https://api.allorigins.win/raw?url=',
-                    'https://corsproxy.io/?'
-                ];
-                
-                let tsmc = null, umc = null;
-                
-                for (const proxy of proxies) {
-                    try {
-                        const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/2330.TW?interval=1d&range=1d');
-                        const resp = await fetch(url);
-                        const data = await resp.json();
-                        tsmc = data.chart.result[0].meta.regularMarketPrice;
-                        break;
-                    } catch(e) { continue; }
-                }
-                
-                for (const proxy of proxies) {
-                    try {
-                        const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/2303.TW?interval=1d&range=1d');
-                        const resp = await fetch(url);
-                        const data = await resp.json();
-                        umc = data.chart.result[0].meta.regularMarketPrice;
-                        break;
-                    } catch(e) { continue; }
-                }
-                
-                if (tsmc && umc) {
-                    document.getElementById('price-2330').textContent = '$' + tsmc;
-                    document.getElementById('value-2330').textContent = '$' + (tsmc * 162).toLocaleString();
-                    const tsmcPnl = (tsmc - 1850) * 162;
-                    const p1 = document.getElementById('pnl-2330');
-                    p1.textContent = (tsmcPnl >= 0 ? '+' : '') + '$' + tsmcPnl.toLocaleString();
-                    p1.className = 'info-value ' + (tsmcPnl >= 0 ? 'profit' : 'loss');
-                    
-                    document.getElementById('price-2303').textContent = '$' + umc;
-                    document.getElementById('value-2303').textContent = '$' + (umc * 500).toLocaleString();
-                    const umcPnl = (umc - 59.1) * 500;
-                    const p2 = document.getElementById('pnl-2303');
-                    p2.textContent = (umcPnl >= 0 ? '+' : '') + '$' + umcPnl.toLocaleString();
-                    p2.className = 'info-value ' + (umcPnl >= 0 ? 'profit' : 'loss');
-                    
-                    const stockValue = tsmc * 162 + umc * 500;
-                    const cash = TOTAL - INVESTED;
-                    const total = stockValue + cash;
-                    const totalPnl = total - TOTAL;
-                    
-                    document.getElementById('cash').textContent = '$' + cash.toLocaleString();
-                    document.getElementById('total').textContent = '$' + total.toLocaleString();
-                    const t = document.getElementById('total-pnl');
-                    t.textContent = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toLocaleString();
-                    t.className = (totalPnl >= 0 ? 'profit' : 'loss');
-                    
-                    document.getElementById('update-time').textContent = '更新時間: ' + new Date().toLocaleString('zh-TW');
-                } else {
-                    document.getElementById('update-time').textContent = '取得失敗，請稍後再試';
-                }
-            } catch(e) {
-                document.getElementById('update-time').textContent = '錯誤: ' + e.message;
-            }
-        }
-        
-        fetchPrices();
-    </script>
 </body>
 </html>
